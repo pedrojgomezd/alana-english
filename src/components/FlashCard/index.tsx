@@ -9,13 +9,15 @@ interface FlashCardProps {
   phrases: Database["public"]["Tables"]["word_phrases"]["Row"][];
 }
 
-const FlashCard = ({ phrases }: FlashCardProps) => {
+const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const refAudio = useRef<HTMLAudioElement>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [phrases, setPhrases] =
+    useState<Database["public"]["Tables"]["word_phrases"]["Row"][]>(p);
 
   const [loadAudio, setLoadAudio] = useState(false);
-  const [audioUrl, setAudioUrl] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string>("");
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   const findUrlAudio = async (phrase_id: number) => {
@@ -28,13 +30,24 @@ const FlashCard = ({ phrases }: FlashCardProps) => {
       },
     });
     const data = await response.json();
-    setAudioUrl(data.publicURL);
+    setPhrases((prev) =>
+      [...prev].map((phrase) => {
+        if (phrase.id === phrase_id) {
+          return { ...phrase, audio_url: data.audio_url };
+        }
+        return phrase;
+      })
+    );
+    setAudioUrl(data.audio_url);
   };
 
   const handlePlayPhrase = async () => {
-    if (audioUrl === "") {
+    if (audioUrl === "" && !phrases[currentPhraseIndex].audio_url) {
       await findUrlAudio(phrases[currentPhraseIndex].id);
+    } else {
+      setAudioUrl(phrases[currentPhraseIndex].audio_url ?? "");
     }
+
     setLoadAudio(false);
     refAudio.current?.play();
     setAudioPlaying(true);
@@ -45,6 +58,12 @@ const FlashCard = ({ phrases }: FlashCardProps) => {
       setAudioPlaying(false);
     });
   }, []);
+
+  const handlePlayBackSpeed = (speed = 1) => {
+    if (refAudio.current) {
+      refAudio.current.playbackRate = speed;
+    }
+  };
 
   const handleNextPhrase = () => {
     setAudioUrl("");
@@ -91,7 +110,7 @@ const FlashCard = ({ phrases }: FlashCardProps) => {
         </div>
       </div>
 
-      <div className="flex justify-between space-x-4 p-4">
+      <div className="flex justify-between space-x-4 pt-4">
         <Button
           outline
           color="dark"
@@ -110,7 +129,14 @@ const FlashCard = ({ phrases }: FlashCardProps) => {
           Next phrase
         </Button>
       </div>
-      <audio hidden id="audio" autoPlay controls src={audioUrl} ref={refAudio}></audio>
+      <audio
+        hidden
+        id="audio"
+        autoPlay
+        controls
+        src={audioUrl}
+        ref={refAudio}
+      ></audio>
     </div>
   );
 };
