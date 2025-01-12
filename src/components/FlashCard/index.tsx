@@ -59,12 +59,6 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     });
   }, []);
 
-  const handlePlayBackSpeed = (speed = 1) => {
-    if (refAudio.current) {
-      refAudio.current.playbackRate = speed;
-    }
-  };
-
   const handleNextPhrase = () => {
     setAudioUrl("");
     setShowTranslation(false);

@@ -16,12 +16,12 @@ export default function WordTypesScreen() {
     const gettypes = async () => {
       const { data, error } = await supabase
         .from("word_types")
-        .select("type, emoji, id");
+        .select("*");
       if (error) {
         console.error(error);
         return;
       }
-      console.log(data);
+      
       setTypes(data);
     };
     gettypes();

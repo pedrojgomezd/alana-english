@@ -18,7 +18,8 @@ export async function POST(request: Request) {
 
   const audioBlod = await textToSpechOpenAI(phrase.phrase);
   const upload = await uploadAudioToSupabase(audioBlod, phrase_id);
-  const { data } = await supabase
+    
+  await supabase
     .from("word_phrases")
     .update({ audio_url: upload.audio_url })
     .eq("id", phrase_id)
