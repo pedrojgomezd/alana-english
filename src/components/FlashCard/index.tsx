@@ -12,13 +12,31 @@ interface FlashCardProps {
 const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const refAudio = useRef<HTMLAudioElement>(null);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [showPhrase, setShowPhrase] = useState(false);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [countShowPhras, setCountShowPhras] = useState(5);
   const [phrases, setPhrases] =
     useState<Database["public"]["Tables"]["word_phrases"]["Row"][]>(p);
 
   const [loadAudio, setLoadAudio] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>("");
   const [audioPlaying, setAudioPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!showPhrase && countShowPhras > 0) {
+      const timer = setTimeout(() => {
+        setCountShowPhras((prev) => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPhrase, countShowPhras]);
+
+  useEffect(() => {
+    if (countShowPhras === 0) {
+      setShowPhrase(true);
+      setCountShowPhras(5);
+    }
+  }, [showPhrase, countShowPhras]);
 
   const findUrlAudio = async (phrase_id: number) => {
     setLoadAudio(true);
@@ -62,6 +80,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const handleNextPhrase = () => {
     setAudioUrl("");
     setShowTranslation(false);
+    setShowPhrase(false);
     setCurrentPhraseIndex((prevIndex) => (prevIndex + 1) % phrases.length);
   };
 
@@ -77,7 +96,11 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     <div>
       <div className="border border-slate-200  rounded-md">
         <div className="p-4">
-          <div className="text-center text-3xl text-slate-800">
+          <div
+            className={`text-center text-3xl  ${
+              showPhrase ? "text-slate-800" : "text-white"
+            }`}
+          >
             {phrases[currentPhraseIndex].phrase}
           </div>
         </div>
@@ -98,9 +121,14 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           >
             {showTranslation ? "Hide" : "Show"} translate
           </Button>
-          <Button size="xl" color="success" onClick={handlePlayPhrase}>
-            {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
-          </Button>
+          <div className="flex gap-4">
+            <Button size="xl" onClick={() => setShowPhrase((p) => !p)}>
+              {showPhrase ? "Hide" : "Show"} Phrase {countShowPhras}
+            </Button>
+            <Button size="xl" color="success" onClick={handlePlayPhrase}>
+              {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
+            </Button>
+          </div>
         </div>
       </div>
 

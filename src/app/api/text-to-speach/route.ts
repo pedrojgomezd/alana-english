@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 
 import { createClientServer } from "@/alana/lib/supabase-serve";
+import { SpeechCreateParams } from "openai/src/resources/audio/speech.js";
 
 export async function POST(request: Request) {
   const supabase = await createClientServer();
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
 
   const audioBlod = await textToSpechOpenAI(phrase.phrase);
   const upload = await uploadAudioToSupabase(audioBlod, phrase_id);
-    
+
   await supabase
     .from("word_phrases")
     .update({ audio_url: upload.audio_url })
@@ -61,11 +62,20 @@ const uploadAudioToSupabase = async (
 };
 
 const textToSpechOpenAI = async (text: string) => {
+  const voices: SpeechCreateParams["voice"][] = [
+    "alloy",
+    "echo",
+    "fable",
+    "onyx",
+    "nova",
+    "shimmer",
+  ];
+  const voice = voices[Math.floor(Math.random() * voices.length)];
   const openai = new OpenAI({ apiKey: process.env.API_OPENIA });
 
   const response = await openai.audio.speech.create({
     model: "tts-1",
-    voice: "echo",
+    voice,
     input: text,
   });
 
