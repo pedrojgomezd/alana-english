@@ -23,13 +23,13 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   useEffect(() => {
-    if (!showPhrase && countShowPhras > 0) {
+    if (!showPhrase && countShowPhras > 0 && audioPlaying) {
       const timer = setTimeout(() => {
         setCountShowPhras((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [showPhrase, countShowPhras]);
+  }, [showPhrase, countShowPhras, audioPlaying]);
 
   useEffect(() => {
     if (countShowPhras === 0) {
@@ -92,6 +92,12 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     );
   };
 
+  const handleSpeed = (speed: number = 1) => {
+    if (refAudio.current) {
+      refAudio.current.playbackRate = speed;
+    }
+  };
+
   return (
     <div>
       <div className="border border-slate-200  rounded-md">
@@ -113,20 +119,25 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
             {phrases[currentPhraseIndex].phrase_es}
           </div>
         </div>
-        <div className="flex justify-between space-x-4 p-4">
+        <div className="flex flex-col gap-2 p-2">
           <Button
             color="indigo"
-            size="xl"
             onClick={() => setShowTranslation((prev) => !prev)}
           >
             {showTranslation ? "Hide" : "Show"} translate
           </Button>
-          <div className="flex gap-4">
-            <Button size="xl" onClick={() => setShowPhrase((p) => !p)}>
-              {showPhrase ? "Hide" : "Show"} Phrase {countShowPhras}
+          <Button onClick={() => setShowPhrase((p) => !p)}>
+            {showPhrase ? "Hide" : "Show"} Phrase {countShowPhras}
+          </Button>
+          <Button color="success" onClick={handlePlayPhrase}>
+            {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
+          </Button>
+          <div className="flex justify-between space-x-4">
+            <Button color="dark" onClick={() => handleSpeed(1)}>
+              1x
             </Button>
-            <Button size="xl" color="success" onClick={handlePlayPhrase}>
-              {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
+            <Button color="dark" onClick={() => handleSpeed(-0.5)}>
+              +0,5x
             </Button>
           </div>
         </div>
