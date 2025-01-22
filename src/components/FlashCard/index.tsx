@@ -14,28 +14,12 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const [showTranslation, setShowTranslation] = useState(false);
   const [showPhrase, setShowPhrase] = useState(false);
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [countShowPhras, setCountShowPhras] = useState(5);
   const [phrases, setPhrases] =
     useState<Database["public"]["Tables"]["word_phrases"]["Row"][]>(p);
 
   const [loadAudio, setLoadAudio] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string>("");
   const [audioPlaying, setAudioPlaying] = useState(false);
-
-  const handleCountTime = useCallback(() => {
-    if (!showPhrase && countShowPhras > 0 && !loadAudio) {
-      const timer = setTimeout(() => {
-        setCountShowPhras((prev) => prev - 1);
-      }, 1000);
-      // return () => clearTimeout(timer);
-    }
-  }, [showPhrase, countShowPhras, loadAudio]);
-
-  useEffect(() => {
-    if (countShowPhras === 0) {
-      setShowPhrase(true);
-    }
-  }, [showPhrase, countShowPhras]);
 
   const findUrlAudio = async (phrase_id: number) => {
     setLoadAudio(true);
@@ -58,7 +42,8 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     setAudioUrl(data.audio_url);
   };
 
-  const handlePlayPhrase = async () => {
+ 
+  const handlePlayPhrase = useCallback(async () => {
     if (audioUrl === "" && !phrases[currentPhraseIndex].audio_url) {
       await findUrlAudio(phrases[currentPhraseIndex].id);
     } else {
@@ -68,13 +53,16 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     setLoadAudio(false);
     refAudio.current?.play();
     setAudioPlaying(true);
-  };
+  }, [audioUrl, phrases, currentPhraseIndex]);
+
+  useEffect(() => {
+    handlePlayPhrase()
+  }, [currentPhraseIndex, handlePlayPhrase, phrases]);
+
 
   useEffect(() => {
     refAudio.current?.addEventListener("pause", () => {
       setAudioPlaying(false);
-
-      handleCountTime();
     });
 
     refAudio.current?.addEventListener("play", () => {
@@ -112,7 +100,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           <div
             className={`text-center text-3xl flex-1 justify-center flex items-center border-b text-slate-600`}
           >
-            {showPhrase ? phrases[currentPhraseIndex].phrase : countShowPhras}
+            {phrases[currentPhraseIndex].phrase}
           </div>
           <div
             className={`text-center text-lg flex-1 justify-center flex items-center ${
