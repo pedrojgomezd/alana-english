@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Database } from "../../../database.types";
 import { Button, Spinner } from "flowbite-react";
 import { Pause, Play } from "lucide-react";
@@ -22,14 +22,15 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const [audioUrl, setAudioUrl] = useState<string>("");
   const [audioPlaying, setAudioPlaying] = useState(false);
 
-  useEffect(() => {
-    if (!showPhrase && countShowPhras > 0 && audioPlaying) {
+  const handleCountTime = useCallback(() => {
+    setCountShowPhras(5);
+    if (!showPhrase && countShowPhras > 0) {
       const timer = setTimeout(() => {
         setCountShowPhras((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [showPhrase, countShowPhras, audioPlaying]);
+  }, [showPhrase, countShowPhras]);
 
   useEffect(() => {
     if (countShowPhras === 0) {
@@ -75,6 +76,11 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     refAudio.current?.addEventListener("pause", () => {
       setAudioPlaying(false);
     });
+
+    refAudio.current?.addEventListener("play", () => {
+      setAudioPlaying(true);
+      handleCountTime();
+    });
   }, []);
 
   const handleNextPhrase = () => {
@@ -90,12 +96,6 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     setCurrentPhraseIndex(
       (prevIndex) => (prevIndex - 1 + phrases.length) % phrases.length
     );
-  };
-
-  const handleSpeed = (speed: number = 1) => {
-    if (refAudio.current) {
-      refAudio.current.playbackRate = speed;
-    }
   };
 
   return (
@@ -132,14 +132,6 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           <Button color="success" onClick={handlePlayPhrase}>
             {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
           </Button>
-          <div className="flex justify-between space-x-4">
-            <Button color="dark" onClick={() => handleSpeed(1)}>
-              1x
-            </Button>
-            <Button color="dark" onClick={() => handleSpeed(-0.5)}>
-              +0,5x
-            </Button>
-          </div>
         </div>
       </div>
 
