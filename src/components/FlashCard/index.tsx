@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Database } from "../../../database.types";
 import { Button, Spinner } from "flowbite-react";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, ArrowUpDown } from "lucide-react";
 
 interface FlashCardProps {
   phrases: Database["public"]["Tables"]["word_phrases"]["Row"][];
@@ -23,19 +23,17 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   const [audioPlaying, setAudioPlaying] = useState(false);
 
   const handleCountTime = useCallback(() => {
-    setCountShowPhras(5);
-    if (!showPhrase && countShowPhras > 0) {
+    if (!showPhrase && countShowPhras > 0 && !loadAudio) {
       const timer = setTimeout(() => {
         setCountShowPhras((prev) => prev - 1);
       }, 1000);
-      return () => clearTimeout(timer);
+      // return () => clearTimeout(timer);
     }
-  }, [showPhrase, countShowPhras]);
+  }, [showPhrase, countShowPhras, loadAudio]);
 
   useEffect(() => {
     if (countShowPhras === 0) {
       setShowPhrase(true);
-      setCountShowPhras(5);
     }
   }, [showPhrase, countShowPhras]);
 
@@ -75,11 +73,12 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   useEffect(() => {
     refAudio.current?.addEventListener("pause", () => {
       setAudioPlaying(false);
+
+      handleCountTime();
     });
 
     refAudio.current?.addEventListener("play", () => {
       setAudioPlaying(true);
-      handleCountTime();
     });
   }, []);
 
@@ -99,42 +98,59 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   };
 
   return (
-    <div>
-      <div className="border border-slate-200  rounded-md">
-        <div className="p-4">
-          <div
-            className={`text-center text-3xl  ${
-              showPhrase ? "text-slate-800" : "text-white"
-            }`}
-          >
-            {phrases[currentPhraseIndex].phrase}
-          </div>
+    <>
+      <div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden">
+        <div className="bg-blue-500 p-4 flex justify-between items-center">
+          <Button color="blue">English</Button>
+          <Button color="blue">
+            <ArrowUpDown className="h-5 w-5" />
+          </Button>
+          <Button color="blue">Spanish</Button>
         </div>
-        <div>
+
+        <div className="flex flex-col gap-4 h-60 justify-center">
           <div
-            className={`text-center text-lg ${
+            className={`text-center text-3xl flex-1 justify-center flex items-center border-b text-slate-600`}
+          >
+            {showPhrase ? phrases[currentPhraseIndex].phrase : countShowPhras}
+          </div>
+          <div
+            className={`text-center text-lg flex-1 justify-center flex items-center ${
               showTranslation ? "text-slate-500" : "text-white"
             } `}
           >
             {phrases[currentPhraseIndex].phrase_es}
           </div>
         </div>
-        <div className="flex flex-col gap-2 p-2">
-          <Button
-            color="indigo"
-            onClick={() => setShowTranslation((prev) => !prev)}
-          >
-            {showTranslation ? "Hide" : "Show"} translate
-          </Button>
-          <Button onClick={() => setShowPhrase((p) => !p)}>
-            {showPhrase ? "Hide" : "Show"} Phrase {countShowPhras}
-          </Button>
-          <Button color="success" onClick={handlePlayPhrase}>
-            {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
-          </Button>
-        </div>
       </div>
-
+      <div className="flex justify-between gap-2 p-2">
+        <Button
+          size="xl"
+          fullSized
+          className="rounded-xl"
+          color="indigo"
+          onClick={() => setShowTranslation((prev) => !prev)}
+        >
+          {showTranslation ? "Hide" : "Show"} translate
+        </Button>
+        <Button
+          size="xl"
+          fullSized
+          className="rounded-xl"
+          color="success"
+          onClick={handlePlayPhrase}
+        >
+          {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
+        </Button>
+        <Button
+          size="xl"
+          fullSized
+          className="rounded-xl"
+          onClick={() => setShowPhrase((p) => !p)}
+        >
+          {showPhrase ? "Hide" : "Show"} Phrase
+        </Button>
+      </div>
       <div className="flex justify-between space-x-4 pt-4">
         <Button
           outline
@@ -162,7 +178,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
         src={audioUrl}
         ref={refAudio}
       ></audio>
-    </div>
+    </>
   );
 };
 
