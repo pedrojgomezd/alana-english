@@ -100,7 +100,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           <div
             className={`text-center text-3xl flex-1 justify-center flex items-center border-b text-slate-600`}
           >
-            {phrases[currentPhraseIndex].phrase}
+            { showPhrase ? phrases[currentPhraseIndex].phrase : "Listen to the audio" }
           </div>
           <div
             className={`text-center text-lg flex-1 justify-center flex items-center ${
