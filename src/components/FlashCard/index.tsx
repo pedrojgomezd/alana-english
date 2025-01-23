@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Database } from "../../../database.types";
 import { Button, Spinner } from "flowbite-react";
-import { Pause, Play, ArrowUpDown } from "lucide-react";
+import { Pause, Play, ArrowUpDown, Languages } from "lucide-react";
 
 interface FlashCardProps {
   phrases: Database["public"]["Tables"]["word_phrases"]["Row"][];
@@ -42,7 +42,6 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
     setAudioUrl(data.audio_url);
   };
 
- 
   const handlePlayPhrase = useCallback(async () => {
     if (audioUrl === "" && !phrases[currentPhraseIndex].audio_url) {
       await findUrlAudio(phrases[currentPhraseIndex].id);
@@ -56,9 +55,8 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   }, [audioUrl, phrases, currentPhraseIndex]);
 
   useEffect(() => {
-    handlePlayPhrase()
+    handlePlayPhrase();
   }, [currentPhraseIndex, handlePlayPhrase, phrases]);
-
 
   useEffect(() => {
     refAudio.current?.addEventListener("pause", () => {
@@ -96,18 +94,32 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           <Button color="blue">Spanish</Button>
         </div>
 
-        <div className="flex flex-col gap-4 h-60 justify-center">
-          <div
-            className={`text-center text-3xl flex-1 justify-center flex items-center border-b text-slate-600`}
-          >
-            { showPhrase ? phrases[currentPhraseIndex].phrase : "Listen to the audio" }
+        <div>
+          <div className="flex flex-col gap-4 h-60 justify-center">
+            <div
+              className={`text-center text-2xl flex-1 justify-center flex items-center border-b text-slate-700`}
+            >
+              {showPhrase
+                ? phrases[currentPhraseIndex].phrase
+                : "Listen to the audio"}
+            </div>
+            <div
+              className={`text-center text-lg flex-1 justify-center flex items-center ${
+                showTranslation ? "text-slate-500" : "text-white"
+              } `}
+            >
+              {phrases[currentPhraseIndex].phrase_es}
+            </div>
           </div>
-          <div
-            className={`text-center text-lg flex-1 justify-center flex items-center ${
-              showTranslation ? "text-slate-500" : "text-white"
-            } `}
-          >
-            {phrases[currentPhraseIndex].phrase_es}
+          <div className="p-2">
+            <Button
+              fullSized
+              color="dark"
+              onClick={() => setShowTranslation((prev) => !prev)}
+            >
+              <Languages className="h-5 w-5 mr-2" />{" "}
+              {showTranslation ? "Hide" : "Show"} translation
+            </Button>
           </div>
         </div>
       </div>
@@ -116,16 +128,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
           size="xl"
           fullSized
           className="rounded-xl"
-          color="indigo"
-          onClick={() => setShowTranslation((prev) => !prev)}
-        >
-          {showTranslation ? "Hide" : "Show"} translate
-        </Button>
-        <Button
-          size="xl"
-          fullSized
-          className="rounded-xl"
-          color="success"
+          color="warning"
           onClick={handlePlayPhrase}
         >
           {loadAudio ? <Spinner /> : audioPlaying ? <Pause /> : <Play />}
