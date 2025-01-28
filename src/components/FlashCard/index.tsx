@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Database } from "../../../database.types";
 import { Button, Spinner } from "flowbite-react";
-import { Pause, Play, ArrowUpDown, Languages } from "lucide-react";
+import { Pause, Play, Languages } from "lucide-react";
 
 interface FlashCardProps {
   phrases: Database["public"]["Tables"]["word_phrases"]["Row"][];
@@ -86,30 +86,18 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
   return (
     <>
       <div className="bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden">
-        <div className="bg-blue-500 p-4 flex justify-between items-center">
-          <Button color="blue">English</Button>
-          <Button color="blue">
-            <ArrowUpDown className="h-5 w-5" />
-          </Button>
-          <Button color="blue">Spanish</Button>
-        </div>
+        <div className="bg-blue-900 p-1 flex justify-between items-center"></div>
 
         <div>
-          <div className="flex flex-col gap-4 h-60 justify-center">
-            <div
-              className={`text-center text-2xl flex-1 justify-center flex items-center border-b text-slate-700`}
-            >
+          <div className="flex flex-col gap-4 h-40 justify-center">
+            <p className="text-center text-2xl text-slate-700">
               {showPhrase
                 ? phrases[currentPhraseIndex].phrase
                 : "Listen to the audio"}
-            </div>
-            <div
-              className={`text-center text-lg flex-1 justify-center flex items-center ${
-                showTranslation ? "text-slate-500" : "text-white"
-              } `}
-            >
-              {phrases[currentPhraseIndex].phrase_es}
-            </div>
+            </p>
+            <p className="text-center text-slate-600">
+              {showTranslation && phrases[currentPhraseIndex].phrase_es}
+            </p>
           </div>
           <div className="p-2">
             <Button
@@ -117,7 +105,7 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
               color="dark"
               onClick={() => setShowTranslation((prev) => !prev)}
             >
-              <Languages className="h-5 w-5 mr-2" />{" "}
+              <Languages className="h-5 w-5 mr-2" />
               {showTranslation ? "Hide" : "Show"} translation
             </Button>
           </div>
@@ -152,6 +140,9 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
         >
           Last phrase
         </Button>
+        <div className="items-center text-slate-500 flex font-bold">
+          {currentPhraseIndex + 1} / {phrases.length}
+        </div>
         <Button
           size="xl"
           color="dark"
