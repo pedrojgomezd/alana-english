@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Database } from "../../../database.types";
 import { Button, Spinner } from "flowbite-react";
 import { Pause, Play, Languages } from "lucide-react";
+import RecordComponent from "./RecordComponent";
 
 interface FlashCardProps {
   phrases: Database["public"]["Tables"]["word_phrases"]["Row"][];
@@ -160,6 +161,15 @@ const FlashCard = ({ phrases: p }: FlashCardProps) => {
         src={audioUrl}
         ref={refAudio}
       ></audio>
+      <div className="flex justify-center mt-6">
+
+      <RecordComponent
+        onRecordingComplete={(audioBlob) => {
+          // Handle the recorded audio blob here if needed
+          console.log('Recording completed:', audioBlob);
+        }}
+      />
+      </div>
     </>
   );
 };
